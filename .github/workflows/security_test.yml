@@ -24,7 +24,7 @@ jobs:
         uses: returntocorp/semgrep-action@v1
         with:
           # Use the recommended security ruleset for all languages
-          config: p/owasp-top-10
+          config: p/owasp-top-ten  
           # You can set this to fail the build if a finding is above a certain severity
           # You can uncomment the line below to test it breaking the build
           # publishFailureThreshold: error
