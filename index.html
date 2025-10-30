@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>This is a simple test page for security testing</title>
+  </head>
+  <body>
+    <h1>Hi</h1>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const name = urlParams.get('name') || 'Guest';
+      document.write('Welcome, ' + name + '!');
+    </script>
+    <p>This is a test page for DevSecOps scanning.</p>
+  </body>
+</html>
