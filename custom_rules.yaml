@@ -1,15 +1,9 @@
 rules:
   - id: html-no-document-write
     message: |
-      Found 'document.write'. This function is dangerous as it can easily
-      lead to a Cross-Site Scripting (XSS) vulnerability, especially if
-      it uses user-controlled input (even indirectly).
-      
-      **Recommendation:** Use safer DOM manipulation methods like 
-      `element.textContent = ...` or `element.insertAdjacentHTML('beforeend', ...)` 
-      with proper input sanitization.
+      Found script tag
     severity: ERROR
-    languages:
-      - javascript
+    languages: [generic]
+    
     patterns:
-      - pattern: document.write(...)
+      - pattern: "<script>"
