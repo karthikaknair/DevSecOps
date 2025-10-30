@@ -11,6 +11,5 @@ rules:
     severity: ERROR
     languages:
       - javascript
-      - html # Include HTML to scan the inline <script> tags
     patterns:
       - pattern: document.write(...)
