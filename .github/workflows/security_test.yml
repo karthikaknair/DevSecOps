@@ -11,14 +11,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  precommit:
-    if: ${{ hashFiles('.pre-commit-config.yaml') != '' }}
+  secret_scanning_ci:
+    name: 🔑 Secret & Formatting Checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pre-commit/action@v3.0.1
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+      
+      - name: ⚙️ Set up Python (Required for pre-commit framework)
+        uses: actions/setup-python@v5
         with:
-          extra_args: --all-files
+          python-version: '3.x'
+
+      - name: 🚀 Run pre-commit hooks (Including detect-secrets)
+        # This action automatically reads and executes the detect-secrets rule 
+        # from your repository's .pre-commit-config.yaml
+        uses: pre-commit/action@v3.0.1
+        # The job fails if any secret or formatting issue is found.
 
   semgrep:
     name: Run Semgrep Scan
