@@ -13,7 +13,6 @@ on:
 jobs:
   precommit:
       name: Pre-commit checks
-      if: ${{ hashFiles('.pre-commit-config.yaml') != '' }}
       runs-on: ubuntu-latest
       steps:
         - name: ⬇️ Checkout code
