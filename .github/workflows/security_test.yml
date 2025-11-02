@@ -33,7 +33,7 @@ jobs:
         # The --base-config tells it to use default secret patterns.
         # The -r . command scans the entire current directory.
         # This job will exit with a non-zero code (fail) if any secrets are found.
-        run: detect-secrets scan --base-config --all-files -r .
+        run: detect-secrets scan --base-config --all-files .
 
   semgrep:
     name: Run Semgrep Scan
