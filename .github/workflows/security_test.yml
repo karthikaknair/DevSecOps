@@ -11,23 +11,29 @@ on:
   workflow_dispatch:
 
 jobs:
-  secret_scanning_ci:
-    name: 🔑 Secret & Formatting Checks
+  secret_scan:
+    name: 🔑 Secret Detection
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
-      
-      - name: ⚙️ Set up Python (Required for pre-commit framework)
+
+      - name: ⚙️ Set up Python
+        # Python is needed to install and run the detect-secrets tool
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: 🚀 Run pre-commit hooks (Including detect-secrets)
-        # This action automatically reads and executes the detect-secrets rule 
-        # from your repository's .pre-commit-config.yaml
-        uses: pre-commit/action@v3.0.1
-        # The job fails if any secret or formatting issue is found.
+      - name: 📦 Install detect-secrets
+        # Install the tool directly
+        run: pip install detect-secrets
+
+      - name: 🔎 Run Secret Scan on Repository
+        # We run the command directly, targeting all files (including .html)
+        # The --base-config tells it to use default secret patterns.
+        # The -r . command scans the entire current directory.
+        # This job will exit with a non-zero code (fail) if any secrets are found.
+        run: detect-secrets scan --base-config --all-files -r .
 
   semgrep:
     name: Run Semgrep Scan
