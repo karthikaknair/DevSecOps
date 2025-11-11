@@ -43,13 +43,19 @@ jobs:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
         
-      - name: ⚙️ Check for index.html
-        # Ensure the target file exists before trying to serve it
-        run: |
-          if [ ! -f index.html ]; then
-            echo "::error::The required 'index.html' file was not found in the repository root."
-            exit 1
-          fi
+      - name: ⚙️ Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: | 
+              p/javascript 
+              custom_rules.yaml 
+
+  zap_baseline:
+    name: 🌐 ZAP Baseline DAST (index.html)
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
 
       - name: ▶️ Serve index.html on :8080
         # Start a simple Python web server in the background
