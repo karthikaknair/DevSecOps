@@ -66,23 +66,20 @@ jobs:
         run: |
           nohup python3 -m http.server 8080 --bind 0.0.0.0 >/dev/null 2>&1 &
           for i in {1..20}; do
-            if curl -fsS http://localhost:8080/ >/dev/null; then exit 0; fi
+            if curl -fsS http://127.0.0.1:8080/ >/dev/null; then exit 0; fi
             sleep 0.5
           done
           echo "Server didn't start in time" >&2
           exit 1
 
-      - name: 🧪 OWASP ZAP Baseline scan
-        uses: zaproxy/action-baseline@v0.13.0
-        with:
-          target: "http://localhost:8080"
-          cmd_options: "-a -m 5"   # alpha passive rules, ~5 min budget
-          artifact_name: "zap-baseline-report"
-          allow_issue_writing: false 
-          # fail_action: true      # uncomment to fail CI on medium+ alerts
-
-      - name: 🧾 Job summary
-        if: always()
+      - name: 🧪 Run ZAP Baseline (console only)
         run: |
-          echo "ZAP report uploaded as artifact: zap-baseline-report" >> $GITHUB_STEP_SUMMARY
-          echo "Target: http://localhost:8080" >> $GITHUB_STEP_SUMMARY      
+          docker run --rm --network host \
+            zaproxy/zap-baseline:latest \
+            -t http://127.0.0.1:8080 \
+            -m 5 \
+            -a
+          # Notes:
+          # -t : target URL
+          # -m : minutes budget
+          # -a : include alpha passive rules
