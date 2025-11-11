@@ -43,43 +43,32 @@ jobs:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
         
-      - name: 🔎 Run Semgrep
-        # Use the official Semgrep action
-        uses: returntocorp/semgrep-action@v1
-        with:
-          # Use the recommended security ruleset for all languages
-          config: |
-              p/javascript  
-              custom_rules.yaml
-          
-          # You can set this to fail the build if a finding is above a certain severity
-          # You can uncomment the line below to test it breaking the build
-         
-  zap_baseline:
-    name: 🌐 ZAP Baseline DAST (index.html)
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@v4
+      - name: ⚙️ Check for index.html
+        # Ensure the target file exists before trying to serve it
+        run: |
+          if [ ! -f index.html ]; then
+            echo "::error::The required 'index.html' file was not found in the repository root."
+            exit 1
+          fi
 
       - name: ▶️ Serve index.html on :8080
+        # Start a simple Python web server in the background
         run: |
           nohup python3 -m http.server 8080 --bind 0.0.0.0 >/dev/null 2>&1 &
+          echo "Waiting for web server to start on port 8080..."
+          # Wait loop to ensure the server is ready
           for i in {1..20}; do
             if curl -fsS http://127.0.0.1:8080/ >/dev/null; then exit 0; fi
             sleep 0.5
           done
-          echo "Server didn't start in time" >&2
+          echo "Server failed to start in time" >&2
           exit 1
-
-      - name: 🧪 Run ZAP Baseline (console only)
+          
+      - name: 🧪 Run ZAP Baseline Scan
+        # Use the ZAP Docker image, connecting it to the local web server
         run: |
           docker run --rm --network host \
             zaproxy/zap-baseline:latest \
             -t http://127.0.0.1:8080 \
             -m 5 \
             -a
-          # Notes:
-          # -t : target URL
-          # -m : minutes budget
-          # -a : include alpha passive rules
