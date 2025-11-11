@@ -55,4 +55,33 @@ jobs:
           # You can set this to fail the build if a finding is above a certain severity
           # You can uncomment the line below to test it breaking the build
          
-       
+  zap_baseline:
+    name: 🌐 ZAP Baseline DAST (index.html)
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: ▶️ Serve index.html on :8080
+        run: |
+          nohup python3 -m http.server 8080 --bind 0.0.0.0 >/dev/null 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://localhost:8080/ >/dev/null; then exit 0; fi
+            sleep 0.5
+          done
+          echo "Server didn't start in time" >&2
+          exit 1
+
+      - name: 🧪 OWASP ZAP Baseline scan
+        uses: zaproxy/action-baseline@v0.13.0
+        with:
+          target: "http://localhost:8080"
+          cmd_options: "-a -m 5"   # alpha passive rules, ~5 min budget
+          artifact_name: "zap-baseline-report"
+          # fail_action: true      # uncomment to fail CI on medium+ alerts
+
+      - name: 🧾 Job summary
+        if: always()
+        run: |
+          echo "ZAP report uploaded as artifact: zap-baseline-report" >> $GITHUB_STEP_SUMMARY
+          echo "Target: http://localhost:8080" >> $GITHUB_STEP_SUMMARY      
