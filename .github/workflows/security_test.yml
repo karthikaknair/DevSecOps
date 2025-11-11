@@ -1,13 +1,10 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Security Scan
+name: Security Scanon
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -19,36 +16,34 @@ jobs:
         uses: actions/checkout@v4
 
       - name: ⚙️ Set up Python
-        # Python is needed to install and run the detect-secrets tool
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
       - name: 📦 Install detect-secrets
-        # Install the tool directly
         run: pip install detect-secrets
 
       - name: 🔎 Run Secret Scan on Repository
-        # We run the command directly, targeting all files (including .html)
-        # The --base-config tells it to use default secret patterns.
-        # The -r . command scans the entire current directory.
-        # This job will exit with a non-zero code (fail) if any secrets are found.
+        # This command will fail the job if any secrets are found.
         run: detect-secrets scan .
 
   semgrep:
-    name: Run Semgrep Scan
+    name: 🛡️ Semgrep SAST Scan
     runs-on: ubuntu-latest
-    
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
-        
-      - name: ⚙️ Run Semgrep
+
+      - name: 🔎 Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
-          config: | 
-              p/javascript 
-              custom_rules.yaml 
+          # CORRECTED: The config block needs proper YAML formatting (p/javascript is fine, but custom_rules.yaml needs to be valid).
+          # A standard config list is recommended for most users.
+          config: |
+            p/ci
+            p/security
+            p/javascript
+          # Optional: Add lines to fail the build based on severity (e.g., errorOn: 'error')
 
   zap_baseline:
     name: 🌐 ZAP Baseline DAST (index.html)
@@ -69,12 +64,21 @@ jobs:
           done
           echo "Server failed to start in time" >&2
           exit 1
-          
+
       - name: 🧪 Run ZAP Baseline Scan
-        # Use the ZAP Docker image, connecting it to the local web server
+        # CORRECTED: Added output flags to generate an accessible report artifact.
         run: |
           docker run --rm --network host \
+            -v ${{ github.workspace }}:/zap/wrk/:rw \
             zaproxy/zap-baseline:latest \
             -t http://127.0.0.1:8080 \
             -m 5 \
-            -a
+            -a \
+            -r zap_report.html
+            
+      - name: ⬆️ Upload ZAP Report
+        # Make the HTML report file available as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-report
+          path: zap_report.html
