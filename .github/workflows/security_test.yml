@@ -78,6 +78,7 @@ jobs:
           target: "http://localhost:8080"
           cmd_options: "-a -m 5"   # alpha passive rules, ~5 min budget
           artifact_name: "zap-baseline-report"
+          allow_issue_writing: false 
           # fail_action: true      # uncomment to fail CI on medium+ alerts
 
       - name: 🧾 Job summary
