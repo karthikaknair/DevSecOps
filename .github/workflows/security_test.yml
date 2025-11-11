@@ -63,12 +63,13 @@ jobs:
           echo "Server failed to start"
           exit 1
 
-      - name: Run ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.11.0
+      - name: ZAP Baseline (stable name, no issues)
+        uses: zaproxy/action-baseline@v0.15.0
         with:
-          target: 'http://localhost:8080/index.html'
-          cmd_options: '-m 5 -a'   # scan for 5 minutes, include alpha rules
-          allow_issue_writing: false  
+          target: "http://127.0.0.1:8080"
+          cmd_options: "-a -m 5"
+          allow_issue_writing: false
+          artifact_name: "zapreport" 
             
 
       
