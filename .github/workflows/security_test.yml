@@ -69,12 +69,11 @@ jobs:
         # CORRECTED: Added output flags to generate an accessible report artifact.
         run: |
           docker run --rm --network host \
-            -v ${{ github.workspace }}:/zap/wrk/:rw \
-            zaproxy/zap-baseline:latest \
+            zaproxy/zap-stable \ # This is the correct, current image name
+            zap-baseline.py \    # You must now explicitly call the script within the container
             -t http://127.0.0.1:8080 \
             -m 5 \
-            -a \
-            -r zap_report.html
+            -a
             
       - name: ⬆️ Upload ZAP Report
         # Make the HTML report file available as a workflow artifact
