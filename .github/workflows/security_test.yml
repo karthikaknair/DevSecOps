@@ -68,10 +68,7 @@ jobs:
         with:
           target: 'http://localhost:8080/index.html'
           cmd_options: '-m 5 -a'   # scan for 5 minutes, include alpha rules
+          allow_issue_writing: false  
             
-      - name: ⬆️ Upload ZAP Report
-        # Make the HTML report file available as a workflow artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-baseline-report
-          path: zap_report.html
+
+      
