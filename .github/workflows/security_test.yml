@@ -45,35 +45,29 @@ jobs:
             p/javascript
           # Optional: Add lines to fail the build based on severity (e.g., errorOn: 'error')
 
-  zap_baseline:
-    name: 🌐 ZAP Baseline DAST (index.html)
+  zap_scan:
+    name: OWASP ZAP Baseline Scan
     runs-on: ubuntu-latest
     steps:
-      - name: ⬇️ Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: ▶️ Serve index.html on :8080
-        # Start a simple Python web server in the background
+      - name: Start a local web server
         run: |
-          nohup python3 -m http.server 8080 --bind 0.0.0.0 >/dev/null 2>&1 &
-          echo "Waiting for web server to start on port 8080..."
-          # Wait loop to ensure the server is ready
-          for i in {1..20}; do
-            if curl -fsS http://127.0.0.1:8080/ >/dev/null; then exit 0; fi
-            sleep 0.5
+          nohup python3 -m http.server 8080 --directory . >/dev/null 2>&1 &
+          echo "Waiting for server to start..."
+          for i in {1..30}; do
+            if curl -fsS http://localhost:8080/index.html >/dev/null; then exit 0; fi
+            sleep 1
           done
-          echo "Server failed to start in time" >&2
+          echo "Server failed to start"
           exit 1
 
-      - name: 🧪 Run ZAP Baseline Scan
-        # CORRECTED: Added output flags to generate an accessible report artifact.
-        run: |
-          docker run --rm --network host \
-            zaproxy/zap-stable \ # This is the correct, current image name
-            zap-baseline.py \    # You must now explicitly call the script within the container
-            -t http://127.0.0.1:8080 \
-            -m 5 \
-            -a
+      - name: Run ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.11.0
+        with:
+          target: 'http://localhost:8080/index.html'
+          cmd_options: '-m 5 -a'   # scan for 5 minutes, include alpha rules
             
       - name: ⬆️ Upload ZAP Report
         # Make the HTML report file available as a workflow artifact
