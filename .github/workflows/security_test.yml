@@ -30,7 +30,7 @@ jobs:
           echo "$SCAN_OUTPUT"
 
           # Check if the output contains the tell-tale sign of findings
-          if echo "$SCAN_OUTPUT" | grep -q 'Results:'; then
+          if echo "$SCAN_OUTPUT" | grep -q 'results:'; then
             echo "::error::Secrets were detected! Failing the build."
             exit 1 # Explicitly fail the step
           else
