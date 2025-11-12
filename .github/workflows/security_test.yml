@@ -40,9 +40,9 @@ jobs:
           # CORRECTED: The config block needs proper YAML formatting (p/javascript is fine, but custom_rules.yaml needs to be valid).
           # A standard config list is recommended for most users.
           config: |
-            p/ci
             p/security
             p/javascript
+            custom_rules.yaml
           # Optional: Add lines to fail the build based on severity (e.g., errorOn: 'error')
 
   zap_scan:
@@ -51,25 +51,34 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'  
+          
+      - name: 📦 Install deps
+        run: npm ci
 
-      - name: Start a local web server
+      - name: ▶️ Start vulnerable server (:3000)
         run: |
-          nohup python3 -m http.server 8080 --directory . >/dev/null 2>&1 &
-          echo "Waiting for server to start..."
+          nohup npm start >/dev/null 2>&1 &  # background
+          # wait for readiness
           for i in {1..30}; do
-            if curl -fsS http://localhost:8080/index.html >/dev/null; then exit 0; fi
-            sleep 1
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 0.5
           done
-          echo "Server failed to start"
+          echo "Server didn't start in time" >&2
           exit 1
 
       - name: ZAP Baseline (stable name, no issues)
         uses: zaproxy/action-baseline@v0.15.0
         with:
-          target: "http://127.0.0.1:8080"
+          target: "http://127.0.0.1:3000"
           cmd_options: "-a -m 5"
           allow_issue_writing: false
           artifact_name: "zapreport" 
+          container_options: "--network host"
             
 
       
