@@ -58,7 +58,7 @@ jobs:
           node-version: '20'  
           
       - name: 📦 Install deps
-        run: npm ci
+        run: npm install --omit=dev --no-audit --no-fund
 
       - name: ▶️ Start vulnerable server (:3000)
         run: |
