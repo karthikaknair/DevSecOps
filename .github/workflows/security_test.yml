@@ -25,7 +25,7 @@ jobs:
 
       - name: 🔎 Run Secret Scan on Repository
         # This command will fail the job if any secrets are found.
-        run: detect-secrets scan .
+        run: detect-secrets scan . --check-for-errors
 
   semgrep:
     name: 🛡️ Semgrep SAST Scan
