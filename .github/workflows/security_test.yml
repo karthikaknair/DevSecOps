@@ -40,8 +40,10 @@ jobs:
           # CORRECTED: The config block needs proper YAML formatting (p/javascript is fine, but custom_rules.yaml needs to be valid).
           # A standard config list is recommended for most users.
           config: |
-            p/security
+            p/secrets
             p/javascript
+            p/owasp-top-ten
+            p/python 
             custom_rules.yaml
           # Optional: Add lines to fail the build based on severity (e.g., errorOn: 'error')
 
@@ -78,7 +80,7 @@ jobs:
           cmd_options: "-a -m 5"
           allow_issue_writing: false
           artifact_name: "zapreport" 
-          container_options: "--network host"
+          
             
 
       
