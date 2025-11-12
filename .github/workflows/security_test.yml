@@ -25,7 +25,17 @@ jobs:
 
       - name: 🔎 Run Secret Scan on Repository
         # This command will fail the job if any secrets are found.
-        run: detect-secrets scan . --check-for-errors
+        run: |
+          SCAN_OUTPUT=$(detect-secrets scan . 2>&1)
+          echo "$SCAN_OUTPUT"
+
+          # Check if the output contains the tell-tale sign of findings
+          if echo "$SCAN_OUTPUT" | grep -q 'Results:'; then
+            echo "::error::Secrets were detected! Failing the build."
+            exit 1 # Explicitly fail the step
+          else
+            echo "No secrets detected."
+          fi
 
   semgrep:
     name: 🛡️ Semgrep SAST Scan
