@@ -15,23 +15,13 @@ jobs:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
 
-      - name: ⚙️ Set up Python
-        uses: actions/setup-python@v5
+      - name: detect-secrets via reviewdog
+        uses: reviewdog/action-detect-secrets@v1
         with:
-          python-version: '3.x'
-
-      - name: 📦 Install detect-secrets
-        run: pip install detect-secrets
-
-      - name: 🔎 Run Secret Scan on Repository
-        # This command will fail the job if any secrets are found.
-        run: |
-          detect-secrets scan --json > secrets.json
-          cat secrets.json
-          if jq '.results | length' secrets.json | grep -q '[1-9]'; then
-            echo "Secrets detected - failing the build"
-            exit 1
-          fi
+          reporter: github-check         # status check on the commit/run
+          filter_mode: nofilter          # scan the whole repo
+          level: error
+          fail_level: error
 
   semgrep:
     name: 🛡️ Semgrep SAST Scan
