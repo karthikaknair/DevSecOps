@@ -9,23 +9,23 @@ on:
 
 jobs:
   secret_scan:
-    name: 🔑 Secret Detection
+    name: Secret Detection
     runs-on: ubuntu-latest
     steps:
-      - name: ⬇️ Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: ⚙️ Set up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: 📦 Install tools
+      - name: Install tools
         run: |
           pip install detect-secrets
           sudo apt-get update -y
           sudo apt-get install -y jq  
 
-      - name: 🔎 Run Secret Scan on Repository (fail on any finding)
+      - name: Run Secret Scan on Repository (fail on any finding)
         run: |
           detect-secrets scan --all-files > secrets.json   # <-- no --json
           echo "Raw detect-secrets output:" && cat secrets.json
@@ -35,17 +35,15 @@ jobs:
           echo "✅ No secrets detected."
 
   semgrep:
-    name: 🛡️ Semgrep SAST Scan
+    name: Semgrep SAST Scan
     runs-on: ubuntu-latest
     steps:
-      - name: ⬇️ Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔎 Run Semgrep
+      - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
-          # CORRECTED: The config block needs proper YAML formatting (p/javascript is fine, but custom_rules.yaml needs to be valid).
-          # A standard config list is recommended for most users.
           config: |
             p/secrets
             p/javascript
@@ -61,15 +59,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: 🟢 Setup Node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'  
           
-      - name: 📦 Install deps
+      - name: Install deps
         run: npm install --omit=dev --no-audit --no-fund
 
-      - name: ▶️ Start vulnerable server (:3000)
+      - name: Start vulnerable server (:3000)
         run: |
           nohup npm start >/dev/null 2>&1 &  # background
           # wait for readiness
