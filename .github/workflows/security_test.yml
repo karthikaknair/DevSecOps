@@ -33,6 +33,34 @@ jobs:
           echo "Total findings: ${COUNT}"
           [ "${COUNT}" -gt 0 ] && { echo "❌ Secrets detected — failing the build."; exit 1; }
           echo "✅ No secrets detected."
+  sbom_scan:
+      name: SBOM (Syft) + Vulnerability Scan (Grype)
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+  
+        # 1) Generate SBOM (SPDX JSON) for the repo workspace
+        - name: Generate SBOM (SPDX JSON)
+          uses: anchore/sbom-action@v0
+          with:
+            format: spdx-json
+            output-file: sbom.spdx.json
+            path: .
+  
+        - name: Upload SBOM artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: sbom-spdx
+            path: sbom.spdx.json
+  
+        # 2) Scan the SBOM with Grype and fail build on High/Critical
+        - name: Scan SBOM (Grype)
+          uses: anchore/scan-action@v6
+          with:
+            sbom: sbom.spdx.json
+            fail-build: true
+            severity-cutoff: high
 
   semgrep:
     name: Semgrep SAST Scan
