@@ -99,7 +99,16 @@ jobs:
         with:
           name: grype-results
           path: grype-results.json
-
+      - name: Summarize Grype findings
+        if: always()
+        run: |
+          if [ -f grype-results.json ]; then
+            echo "Top vulnerability findings:"
+            jq -r '
+              .matches[]
+              | "\(.artifact.name)@\(.artifact.version) | \(.vulnerability.id) | \(.vulnerability.severity)"
+            ' grype-results.json | sort | uniq | head -50
+          fi
 
   semgrep:
     name: Semgrep SAST Scan
