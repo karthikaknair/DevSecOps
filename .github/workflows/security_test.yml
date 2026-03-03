@@ -19,20 +19,17 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install tools
-        run: |
-          pip install detect-secrets
-          sudo apt-get update -y
-          sudo apt-get install -y jq  
+      - run: pip install detect-secrets
 
-      - name: Run Secret Scan on Repository (fail on any finding)
+      - name: Run detect-secrets (fail if any secret found)
         run: |
-          detect-secrets scan --all-files > secrets.json   # <-- no --json
-          echo "Raw detect-secrets output:" && cat secrets.json
-          COUNT=$(jq '[.results[] | length] | add // 0' secrets.json)
-          echo "Total findings: ${COUNT}"
-          [ "${COUNT}" -gt 0 ] && { echo "❌ Secrets detected — failing the build."; exit 1; }
-          echo "✅ No secrets detected."
+          detect-secrets scan --all-files --json > secrets.json
+          if grep -q '"results": {}' secrets.json; then
+            echo "✅ No secrets detected."
+          else
+            echo "❌ Secrets detected."
+            exit 1
+          fi
   sbom_scan:
     name: SBOM (Syft) + Vulnerability Scan (Grype)
     runs-on: ubuntu-latest
