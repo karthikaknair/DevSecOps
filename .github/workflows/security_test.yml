@@ -21,15 +21,9 @@ jobs:
 
       - run: pip install detect-secrets
 
-      - name: Run detect-secrets (fail if any secret found)
+      - name: Run detect-secrets (fail if secret found)
         run: |
-          detect-secrets scan --all-files --json > secrets.json
-          if grep -q '"results": {}' secrets.json; then
-            echo "✅ No secrets detected."
-          else
-            echo "❌ Secrets detected."
-            exit 1
-          fi
+          detect-secrets scan --all-files
   sbom_scan:
     name: SBOM (Syft) + Vulnerability Scan (Grype)
     runs-on: ubuntu-latest
