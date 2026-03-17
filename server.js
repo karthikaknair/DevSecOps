@@ -22,11 +22,7 @@ app.get('/redirect', (req, res) => {
   res.redirect(req.query.next || '/');
 });
 
-// secret leak (fake default): /debug/secret
-app.get('/debug/secret', (_req, res) => {
-  const secret = process.env.DEMO_API_KEY || 'AKIAIOSFODNN7EXAMPLE';
-  res.json({ debugSecretEcho: secret });
-});
+
 
 app.listen(PORT, () => {
   console.log(`Vuln test server on http://localhost:${PORT}`);
