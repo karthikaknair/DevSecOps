@@ -24,22 +24,28 @@ jobs:
 
       - name: Run Full Scan (No Secrets in Logs)
         run: |
-          detect-secrets scan . > scan_results.json
-          RESULT_COUNT=$(jq '.results | length' scan_results.json)
+          detect-secrets scan --all-files > scan_results.json
+          RESULT_COUNT=$(jq '[.results[] | length] | add // 0' scan_results.json)
 
           if [ "$RESULT_COUNT" -gt 0 ]; then
-            echo "::error::Secrets detected in the repository!"
+            echo "Error!! Secrets detected in the repository!"
             echo "-------------------------------------------------------"
             echo "The following files contain potential secrets:"
             
             # This jq command extracts ONLY the file paths and line numbers
-            jq -r '.results | to_entries[] | "File: \(.key) (Line: \(.value[].line_number))"' scan_results.json
-            
+            jq -r '
+              .results
+              | to_entries[]
+              | .key as $file
+              | .value[]
+              | "File: \($file) | Line: \(.line_number) | Type: \(.type)"
+            ' scan_results.json
             echo "-------------------------------------------------------"
             echo "Action: Rotate these secrets and add them to a .baseline file."
+            rm -f scan_results.json
             exit 1
           else
-            echo "✅ No secrets found in the full repository scan."
+            echo "No secrets found in the full repository scan."
           fi
   sbom_scan:
     name: SBOM (Syft) + Vulnerability Scan (Grype)
