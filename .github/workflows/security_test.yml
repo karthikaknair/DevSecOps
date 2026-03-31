@@ -123,7 +123,36 @@ jobs:
               | "\(.artifact.name)@\(.artifact.version) | \(.vulnerability.id) | \(.vulnerability.severity)"
             ' grype-results.json | sort | uniq | head -50
           fi
+            # 3) Trivy SCA scan on the repo filesystem
+      - name: Run Trivy SCA scan
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          format: json
+          output: trivy-results.json
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
 
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: trivy-results.json
+
+      - name: Summarize Trivy findings
+        if: always()
+        run: |
+          if [ -f trivy-results.json ]; then
+            echo "Top Trivy vulnerability findings:"
+            jq -r '
+              .Results[]? 
+              | .Vulnerabilities[]? 
+              | "\(.PkgName)@\(.InstalledVersion) | \(.VulnerabilityID) | \(.Severity)"
+            ' trivy-results.json | sort | uniq | head -50
+          fi
   semgrep:
     name: Semgrep SAST Scan
     runs-on: ubuntu-latest
